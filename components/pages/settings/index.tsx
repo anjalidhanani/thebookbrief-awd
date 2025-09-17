@@ -6,6 +6,7 @@ import { useState } from 'react'
 import GoBackButton from '../../common/GoBackButton'
 import HeaderText from '../../common/HeaderText'
 import AccountSettings from './AccountSettings'
+import MyReadingLists from './MyReadingLists'
 
 interface HomePageProps {
   userInfo: UserInfo
@@ -13,7 +14,7 @@ interface HomePageProps {
 
 const Home: React.FC<HomePageProps> = ({ userInfo }) => {
   const [activeTab, setActiveTab] = useState<string>('account')
-  const tabButtonOptions = ['account']
+  const tabButtonOptions = ['account', 'reading-lists']
   const TabButton = (tab: string) => {
     return (
       <button
@@ -24,7 +25,7 @@ const Home: React.FC<HomePageProps> = ({ userInfo }) => {
           setActiveTab(tab)
         }}
       >
-        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+        {tab === 'reading-lists' ? 'Reading Lists' : tab.charAt(0).toUpperCase() + tab.slice(1)}
       </button>
     )
   }
@@ -35,15 +36,14 @@ const Home: React.FC<HomePageProps> = ({ userInfo }) => {
           <GoBackButton />
           <HeaderText text='Settings' />
         </div>
-        {/* <div className='w-full flex gap-10 py-4 mobile:py-2 text-lg mobile:text-lg mobile:justify-between content-center items-center border-b'>
+        <div className='w-full flex gap-10 py-4 mobile:py-2 text-lg mobile:text-lg mobile:justify-between content-center items-center border-b'>
           {tabButtonOptions.map((data, index) => {
             return <div key={index}>{TabButton(data)}</div>
           })}
-        </div> */}
+        </div>
         <div className='flex flex-col py-6'>
           {activeTab === 'account' && <AccountSettings />}
-          {/* {activeTab === 'content' && <ContentSettings />} */}
-          {/* {activeTab === "preference" && <PreferenceSettings />} */}
+          {activeTab === 'reading-lists' && <MyReadingLists userId={userInfo?.id || ''} />}
         </div>
       </div>
     </div>

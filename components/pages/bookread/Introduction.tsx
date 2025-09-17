@@ -17,9 +17,18 @@ import classNames from '../../../utils/classNames'
 import { decode } from 'html-entities';
 import DivLoader from '../../common/DivLoader'
 import GoBackButton from '../../common/GoBackButton'
+import BookReviews from '../../common/BookReviews'
+import AddToListButton from '../../common/AddToListButton'
+import { connect } from 'react-redux'
+import { GlobalState } from '../../../store/reducers'
+import { UserInfo } from '../../../api/users'
 
 
-const Chapter: React.FC = () => {
+interface ChapterProps {
+  userInfo: UserInfo;
+}
+
+const Chapter: React.FC<ChapterProps> = ({ userInfo }) => {
   const router = useRouter()
   const { query } = router
   const { bookId } = query
@@ -116,6 +125,16 @@ const Chapter: React.FC = () => {
                           {bookData?.readingTime} Minutes
                         </div>
                       </div>
+                      
+                      {/* Add to Reading List Button */}
+                      <div className='mt-6'>
+                        <AddToListButton
+                          bookId={bookData?.id || ''}
+                          userId={userInfo?.id || ''}
+                          bookTitle={bookData?.title}
+                          className="w-full sm:w-auto"
+                        />
+                      </div>
                     </div>
                   </div>
                   {currentChapter &&
@@ -155,6 +174,18 @@ const Chapter: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Reviews Section */}
+                  {bookData && (
+                    <div className='w-full mt-12'>
+                      <div className='max-w-4xl mx-auto'>
+                        <BookReviews 
+                          bookId={bookData.id} 
+                          userId={userInfo?.id || ''}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -165,4 +196,10 @@ const Chapter: React.FC = () => {
   )
 }
 
-export default Chapter
+const mapStateToProps = (state: GlobalState) => {
+  return {
+    userInfo: state.main.userInfo
+  }
+}
+
+export default connect(mapStateToProps)(Chapter)

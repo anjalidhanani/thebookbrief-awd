@@ -7,6 +7,8 @@ A modern, responsive web application for reading and discovering books. Built wi
 - **📖 Book Reading**: Read books chapter by chapter with a clean, distraction-free interface
 - **🔍 Search & Discovery**: Search books by title, author, or category
 - **📂 Categories**: Browse books by different categories
+- **⭐ Book Reviews**: Rate and review books with public/private visibility options
+- **📋 Reading Lists**: Create and manage personal reading lists with book organization
 - **👤 User Authentication**: Secure login/signup with JWT authentication
 - **💖 Favorites**: Like and save favorite books
 - **📱 Responsive Design**: Optimized for desktop, tablet, and mobile devices
@@ -83,12 +85,16 @@ thebookbrief-webapp-main/
 ├── api/                    # API service functions
 │   ├── books.ts           # Book-related API calls
 │   ├── categories.ts      # Category API calls
+│   ├── readingLists.ts    # Reading list API calls
+│   ├── reviews.ts         # Book review API calls
 │   └── users.ts           # User authentication APIs
 ├── components/            # React components
 │   ├── common/           # Reusable components
 │   │   ├── layout/       # Layout components
 │   │   ├── BookInfo.tsx  # Book display component
+│   │   ├── BookReviews.tsx # Book review component
 │   │   ├── BookSlider.tsx # Book carousel
+│   │   ├── ReadingLists.tsx # Reading list management
 │   │   └── ...
 │   ├── icons/            # Custom icon components
 │   └── pages/            # Page-specific components
@@ -138,6 +144,8 @@ The frontend communicates with the backend API for:
 
 - **Authentication**: Login, signup, password reset
 - **Books**: Fetching book data, chapters, categories
+- **Reviews**: Creating, reading, updating, and deleting book reviews
+- **Reading Lists**: Managing personal and public reading lists
 - **User Data**: Profile management, preferences
 - **Search**: Book and author search functionality
 
@@ -163,6 +171,22 @@ Base URL is configured via `NEXT_PUBLIC_API_URL` environment variable.
 - Protected routes for authenticated users
 - Password reset functionality
 
+## ⭐ Book Reviews
+
+- **Star Rating System**: 1-5 star ratings for books
+- **Review Comments**: Optional text reviews with user feedback
+- **Public/Private Reviews**: Control visibility of reviews
+- **Review Management**: Create, update, and delete reviews
+- **Review Display**: View all reviews for a book with ratings
+
+## 📋 Reading Lists
+
+- **Personal Lists**: Create custom reading lists for organization
+- **List Management**: Add/remove books from lists
+- **Public Sharing**: Option to make lists public for discovery
+- **List Categories**: Organize books by themes, genres, or reading status
+- **Quick Actions**: Easy add-to-list functionality from book pages
+
 ## 📦 Dependencies
 
 ### Core Dependencies
@@ -179,6 +203,8 @@ Base URL is configured via `NEXT_PUBLIC_API_URL` environment variable.
 - `react-hot-toast` - Notifications
 - `swiper` - Carousels
 - `html-entities` - HTML entity decoding
+- `react-hook-form` - Form management (if used)
+- `zod` - Schema validation (if used)
 
 ## 🚀 Deployment
 

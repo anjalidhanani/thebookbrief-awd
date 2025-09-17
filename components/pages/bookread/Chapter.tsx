@@ -15,11 +15,19 @@ import { INTRODUCTION_CHAPTER } from '../../../utils/consts'
 import extractTextFromHtml from '../../../utils/extractTextFromHtml'
 import DivLoader from '../../common/DivLoader'
 import GoBackButton from '../../common/GoBackButton'
+import AddToListButton from '../../common/AddToListButton'
 import { decode } from 'html-entities'
+import { connect } from 'react-redux'
+import { GlobalState } from '../../../store/reducers'
+import { UserInfo } from '../../../api/users'
 
 let regex = /<\w+\s*>\s*<\/\w+\s*>/g;
 
-const Chapter: React.FC = () => {
+interface ChapterProps {
+  userInfo: UserInfo;
+}
+
+const Chapter: React.FC<ChapterProps> = ({ userInfo }) => {
   const router = useRouter()
   const { query } = router
   const { bookId, chapter } = query
@@ -49,23 +57,6 @@ const Chapter: React.FC = () => {
       setIsPlaying(false);
     }
   }, [currentChapter]);
-
-  // const handlePlayPause = () => {
-  //   if (synth.speaking && !synth.paused) {
-  //     synth.pause();
-  //   } else {
-  //     if (synth.paused) {
-  //       synth.resume();
-  //     } else {
-  //       if (utterance) {
-  //         synth.cancel();
-  //         utterance.voice = voice;
-  //         synth.speak(utterance);
-  //       }
-  //     }
-  //   }
-  //   setIsPlaying(!isPlaying);
-  // };
 
   const modifyAndSetBook = (data: any) => {
     const bookInfo = {
@@ -121,6 +112,18 @@ const Chapter: React.FC = () => {
           <link rel='icon' href='/favicon.ico' />
         </Head>
         <GoBackButton />
+
+        {/* Floating Add to List Button */}
+        {bookData && (
+          <div className='fixed bottom-6 right-6 z-30 mobile:bottom-4 mobile:right-4'>
+            <AddToListButton
+              bookId={bookData.id}
+              userId={userInfo?.id || ''}
+              bookTitle={bookData.title}
+              className="shadow-2xl"
+            />
+          </div>
+        )}
 
         <div className='relative w-full flex justify-center'>
           <div
@@ -206,34 +209,14 @@ const Chapter: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* {currentChapter?.id !== 0 &&
-          <div className='sticky mobile:fixed w-full bottom-14 mobile:pb-3 flex items-center justify-center'>
-            {currentChapter?.text &&
-              <div className="flex items-center justify-center rounded-full bg-gray-100 drop-shadow-lg p-3 mobile:p-2">
-                <button onClick={handlePlayPause}>
-                  {isPlaying ? (
-                    <PauseCircleIcon className="w-8 h-8 bg-sky-500 rounded-full text-white" />
-                  ) : (
-                    <PlayCircleIcon className="w-8 h-8 bg-sky-500 rounded-full text-white" />
-                  )}
-                </button>
-                {!isPlaying ? (
-                  <div className="w-full flex gap-[3px] items-center justify-center px-[28px] py-[18.5px]">
-                    {[...Array(40)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-[3.5px] h-[3.5px] bg-sky-500 rounded-full"
-                      ></div>
-                    ))}
-                  </div>
-                ) :
-                  <div>
-                    <Lottie animationData={musicJson} loop={true} />
-                  </div>}
-              </div>}
-          </div>} */}
     </div>
   )
 }
 
-export default Chapter
+const mapStateToProps = (state: GlobalState) => {
+  return {
+    userInfo: state.main.userInfo
+  }
+}
+
+export default connect(mapStateToProps)(Chapter)
