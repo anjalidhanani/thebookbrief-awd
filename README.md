@@ -52,8 +52,8 @@ This application now includes a fully integrated backend that was merged from a 
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd thebookbrief-webapp-main
+   git clone https://github.com/anjalidhanani/thebookbrief-awd.git
+   cd thebookbrief-awd
    ```
 
 2. **Install dependencies**
