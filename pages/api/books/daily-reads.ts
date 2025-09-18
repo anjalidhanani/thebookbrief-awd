@@ -13,15 +13,45 @@ export default async function handler(req: AuthRequest, res: NextApiResponse) {
   const isAuthed = await requireAuth(req, res);
   if (!isAuthed) return;
 
-  const items = await Book.find({ 
-    isDaily: true, 
-    isPublished: true, 
-    isDeleted: false 
-  }).lean();
+  // Parse query parameters
+  const offset = parseInt(req.query.offset as string) || 0;
+  const limit = parseInt(req.query.limit as string) || 20; // Default limit of 20 books per page
+
+  // Calculate pagination
+  const skip = offset * limit;
+
+  // Get total count for pagination info
+  const totalCount = await Book.countDocuments({
+    isDaily: true,
+    isPublished: true,
+    isDeleted: false
+  });
+
+  // Fetch books with pagination and exclude chapter content to reduce response size
+  const items = await Book.find({
+    isDaily: true,
+    isPublished: true,
+    isDeleted: false
+  })
+  .select('-chapter') // Exclude chapter content as it's not needed for listings
+  .sort({ publishedDate: -1 })
+  .skip(skip)
+  .limit(limit)
+  .lean();
+
+  const totalPages = Math.ceil(totalCount / limit);
+  const hasMore = (skip + limit) < totalCount;
   
   return res.json({ 
     success: true, 
     data: items, 
+    pagination: {
+      currentPage: offset + 1,
+      totalPages,
+      totalCount,
+      hasMore,
+      limit
+    },
     message: 'Books retrieved successfully', 
     error: null 
   });

@@ -1,13 +1,16 @@
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import 'swiper/css'
 import { SwiperSlide } from 'swiper/react'
 import { getAllFreeBooks, getFeaturedBook } from '../../../api/books'
 import BookInfo from '../../common/BookInfo'
-import { BookSlider } from '../../common/BookSlider'
 import DivLoader from '../../common/DivLoader'
 import SubHeaderText from '../../common/SubHeaderText'
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { Navigation } from 'swiper/modules'
+import { Swiper } from 'swiper/react'
+import useWindowSize from '../../../hooks/useWindowSize'
 
 const Home: React.FC = () => {
   const router = useRouter()
@@ -15,12 +18,25 @@ const Home: React.FC = () => {
   const [books, setBooks] = useState<any[]>([])
   const [freshBooks, setFreshBooks] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [hasMoreBooks, setHasMoreBooks] = useState<boolean>(true)
+  const [hasMoreFeatured, setHasMoreFeatured] = useState<boolean>(true)
 
-  const fetchFeaturedBooks = () => {
+  // Refs for sliders
+  const featuredSliderRef = useRef<any>(null)
+  const booksSliderRef = useRef<any>(null)
+  const [width, height] = useWindowSize()
+
+  const fetchFeaturedBooks = (appendMode: boolean = false) => {
     setIsLoading(true)
-    getFeaturedBook()
+    const currentPage = appendMode ? Math.floor(featuredBooks.length / 20) : 0
+    getFeaturedBook(currentPage, 20)
       .then(data => {
-        setFeaturedBooks(data.data)
+        setFeaturedBooks((preval: any) => {
+          return appendMode ? preval.concat(data.data) : data.data
+        })
+        if (data.pagination) {
+          setHasMoreFeatured(data.pagination.hasMore)
+        }
       })
       .catch(err => {
         console.log(err)
@@ -30,13 +46,17 @@ const Home: React.FC = () => {
       })
   }
 
-  const fetchBooks = () => {
+  const fetchBooks = (appendMode: boolean = false) => {
     setIsLoading(true)
-    getAllFreeBooks(books.length)
+    const currentPage = appendMode ? Math.floor(books.length / 20) : 0
+    getAllFreeBooks(currentPage, 20)
       .then(data => {
         setBooks((preval: any) => {
-          return preval.concat(data.data)
+          return appendMode ? preval.concat(data.data) : data.data
         })
+        if (data.pagination) {
+          setHasMoreBooks(data.pagination.hasMore)
+        }
       })
       .catch(err => {
         console.log(err)
@@ -44,6 +64,90 @@ const Home: React.FC = () => {
       .finally(() => {
         setIsLoading(false)
       })
+  }
+
+  // Custom slider component with load more functionality
+  const CustomBookSlider = ({ children, onLoadMore, hasMore, sliderRef, congestion = 'HIGH' }: any) => {
+    const navigationPrevRef = useRef<HTMLButtonElement>(null)
+    const navigationNextRef = useRef<HTMLButtonElement>(null)
+    const [isAtEnd, setIsAtEnd] = useState(false)
+    const navClassNames = 'bg-white flex items-center justify-center cursor-pointer transition w-8 h-8 rounded-full absolute top-1/2 -mt-4 z-10 shadow-lg'
+
+    const handleNextClick = () => {
+      let atEnd = false
+
+      if (sliderRef.current && sliderRef.current.swiper) {
+        const swiper = sliderRef.current.swiper
+        atEnd = swiper.isEnd || isAtEnd
+      } else {
+        atEnd = isAtEnd
+      }
+
+      if (atEnd && hasMore && onLoadMore) {
+        onLoadMore()
+      }
+    }
+
+    return (
+      <Swiper
+        key={width}
+        modules={[Navigation]}
+        spaceBetween={30}
+        className='mt-3 relative !overflow-visible'
+        onSwiper={(swiper) => {
+          if (sliderRef) {
+            sliderRef.current = swiper
+          }
+        }}
+        navigation={{
+          prevEl: navigationPrevRef.current,
+          nextEl: navigationNextRef.current
+        }}
+        onBeforeInit={(swiper: any) => {
+          swiper.params.navigation.prevEl = navigationPrevRef.current
+          swiper.params.navigation.nextEl = navigationNextRef.current
+        }}
+        onSlideChange={(swiper) => {
+          if (swiper) {
+            setIsAtEnd(swiper.isEnd)
+          }
+        }}
+        breakpoints={
+          congestion === 'HIGH'
+            ? {
+                320: { slidesPerView: 2 },
+                500: { slidesPerView: 4 },
+                992: { slidesPerView: 4 },
+                1280: { slidesPerView: 6 },
+                1441: { slidesPerView: 7 },
+                1700: { slidesPerView: 8 }
+              }
+            : {
+                320: { slidesPerView: 1 },
+                500: { slidesPerView: 1 },
+                992: { slidesPerView: 2 },
+                1280: { slidesPerView: 2 },
+                1441: { slidesPerView: 3 },
+                1700: { slidesPerView: 3 },
+                1900: { slidesPerView: 4 }
+              }
+        }
+      >
+        <button ref={navigationPrevRef} className={`${navClassNames} -left-4`}>
+          <ArrowLeftIcon className='w-4 h-4 text-gray-500' />
+        </button>
+
+        {children}
+
+        <button
+          ref={navigationNextRef}
+          className={`${navClassNames} -right-4`}
+          onClick={handleNextClick}
+        >
+          <ArrowRightIcon className='w-4 h-4 text-gray-500' />
+        </button>
+      </Swiper>
+    )
   }
 
   useEffect(() => {
@@ -75,7 +179,12 @@ const Home: React.FC = () => {
           <>
             <SubHeaderText text='Top picks for you' />
             <div className='py-6 sm:px-4 smd:px-6 rounded-3xl overflow-hidden mobile:px-4'>
-              <BookSlider>
+              <CustomBookSlider
+                onLoadMore={() => fetchFeaturedBooks(true)}
+                hasMore={hasMoreFeatured}
+                sliderRef={featuredSliderRef}
+                congestion="LOW"
+              >
                 {featuredBooks?.map((data: any, index: number) => {
                   return (
                     <SwiperSlide key={index}>
@@ -117,7 +226,7 @@ const Home: React.FC = () => {
                     </SwiperSlide>
                   )
                 })}
-              </BookSlider>
+              </CustomBookSlider>
             </div>
           </>
         )}
@@ -129,7 +238,12 @@ const Home: React.FC = () => {
           <>
             <SubHeaderText text='Fresh Reads' />
             <div className='overflow-hidden scrollbar-hide px-8 tablet:px-4 mobile:px-4'>
-              <BookSlider congestion={'HIGH'}>
+              <CustomBookSlider
+                onLoadMore={() => fetchBooks(true)}
+                hasMore={hasMoreBooks}
+                sliderRef={booksSliderRef}
+                congestion="HIGH"
+              >
                 {books &&
                   books.map((data: any, index: number) => {
                     return (
@@ -138,7 +252,7 @@ const Home: React.FC = () => {
                       </SwiperSlide>
                     )
                   })}
-              </BookSlider>
+              </CustomBookSlider>
             </div>
           </>
         )}

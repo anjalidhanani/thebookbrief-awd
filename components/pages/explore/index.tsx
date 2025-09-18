@@ -179,14 +179,19 @@ const NoBook = React.memo(() => {
 export const PopularBooks = React.memo(() => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [defaultBooks, setDefaultBooks] = useState([])
+  const [hasMoreBooks, setHasMoreBooks] = useState<boolean>(true)
 
-  const fetchBooks = () => {
+  const fetchBooks = (appendMode: boolean = false) => {
     setIsLoading(true)
-    getAllFreeBooks(defaultBooks.length)
+    getAllFreeBooks(appendMode ? defaultBooks.length : 0)
       .then(data => {
         setDefaultBooks((preval: any) => {
-          return preval.concat(data.data)
+          return appendMode ? preval.concat(data.data) : data.data
         })
+        // Update hasMoreBooks based on pagination data
+        if (data.pagination) {
+          setHasMoreBooks(data.pagination.hasMore)
+        }
       })
       .catch(err => {
         console.log(err)
@@ -218,19 +223,22 @@ export const PopularBooks = React.memo(() => {
             })}
         </div>
       )}
-      <div className='w-full flex justify-center'>
-        <button
-          className='flex items-center p-1.5 px-5 rounded-full bg-sky-500 ring-0 outline-none text-white mb-4 whitespace-nowrap gap-1.5'
-          onClick={fetchBooks}
-        >
-          Load more
-          {isLoading ? (
-            <DivLoader className='w-4 h-4 border-b-white border-r-white' />
-          ) : (
-            <ChevronDownIcon className='w-6 h-6' />
-          )}
-        </button>
-      </div>
+      {hasMoreBooks && (
+        <div className='w-full flex justify-center'>
+          <button
+            className='flex items-center p-1.5 px-5 rounded-full bg-sky-500 ring-0 outline-none text-white mb-4 whitespace-nowrap gap-1.5'
+            onClick={() => fetchBooks(true)}
+            disabled={isLoading}
+          >
+            Load more
+            {isLoading ? (
+              <DivLoader className='w-4 h-4 border-b-white border-r-white' />
+            ) : (
+              <ChevronDownIcon className='w-6 h-6' />
+            )}
+          </button>
+        </div>
+      )}
     </div>
   )
 })

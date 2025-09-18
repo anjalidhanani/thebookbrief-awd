@@ -44,10 +44,10 @@ export const getBooksByKeyword = (data: {
 };
 
 
-export const getAllFreeBooks = (page: number): Promise<any> => {
+export const getAllFreeBooks = (page: number, limit: number = 20): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: `/api/books/free?offset=${page}`,
+      url: `/api/books/free?offset=${page}&limit=${limit}`,
       method: "get",
     })
       .then(({ data }) => {
@@ -60,10 +60,10 @@ export const getAllFreeBooks = (page: number): Promise<any> => {
 };
 
 
-export const getFeaturedBook = (): Promise<any> => {
+export const getFeaturedBook = (page: number = 0, limit: number = 20): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: "/api/books/daily-reads",
+      url: `/api/books/daily-reads?offset=${page}&limit=${limit}`,
       method: "get",
     })
       .then(({ data }) => {
