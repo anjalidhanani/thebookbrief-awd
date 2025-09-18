@@ -9,6 +9,7 @@ export interface UserDocument extends Document {
   age?: number;
   isVerified: boolean;
   isDeleted: boolean;
+  role: 'user' | 'admin';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const userSchema = new Schema<UserDocument>(
     age: { type: Number },
     isVerified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
   },
   { timestamps: true }
 );

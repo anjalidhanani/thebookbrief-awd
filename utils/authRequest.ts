@@ -7,6 +7,7 @@ export const authPages = [
   "/signup",
   "/reset-password",
   "/forgot-password",
+  "/admin-login",
 ];
 
 let cancelTokenSource = axios.CancelToken.source();

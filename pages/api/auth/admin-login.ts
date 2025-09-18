@@ -5,7 +5,7 @@ import connectToDatabase from '../../../lib/utils/database';
 import { User } from '../../../lib/models/User';
 import { signJwt } from '../../../lib/utils/jwt';
 
-const loginSchema = z.object({ 
+const adminLoginSchema = z.object({ 
   email: z.string().email(), 
   password: z.string().min(6) 
 });
@@ -18,15 +18,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await connectToDatabase();
 
   try {
-    const data = loginSchema.parse(req.body);
-    const user = await User.findOne({ email: data.email.toLowerCase() });
+    const data = adminLoginSchema.parse(req.body);
+    const user = await User.findOne({ 
+      email: data.email.toLowerCase(),
+      role: 'admin'
+    });
+    
     if (!user || !user.passwordHash) {
-      return res.status(401).json({ error: 'Incorrect email or password' });
+      return res.status(401).json({ error: 'Invalid admin credentials' });
     }
     
     const ok = await bcrypt.compare(data.password, user.passwordHash);
     if (!ok) {
-      return res.status(401).json({ error: 'Incorrect email or password' });
+      return res.status(401).json({ error: 'Invalid admin credentials' });
     }
     
     const token = signJwt({ id: String(user._id) }, '30d');
@@ -37,7 +41,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name: user.name,
         email: user.email,
         avatar: user.avatar,
-        providers: user.providers,
         role: user.role,
         isVerified: user.isVerified,
       },
@@ -46,6 +49,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (e?.issues) {
       return res.status(400).json({ error: 'Invalid input' });
     }
-    return res.status(401).json({ error: 'Incorrect email or password' });
+    return res.status(401).json({ error: 'Invalid admin credentials' });
   }
 }
