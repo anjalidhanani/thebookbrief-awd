@@ -10,8 +10,6 @@ export interface UserInfo {
   providers?: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export const userLogin = (loginData: {
   email?: string;
   password?: string;
@@ -21,7 +19,7 @@ export const userLogin = (loginData: {
 }): Promise<any> => {
   return new Promise((resolve, reject) => {
     request({
-      url: "/auth/login",
+      url: "/api/auth/login",
       method: "post",
       data: loginData,
     })
@@ -44,7 +42,7 @@ export const userSignup = (loginData: {
 }): Promise<any> => {
   return new Promise((resolve, reject) => {
     request({
-      url: BASE_URL + "/auth/signup",
+      url: "/api/auth/signup",
       method: "post",
       data: loginData,
     })
@@ -60,7 +58,7 @@ export const userSignup = (loginData: {
 export const getUserInfo = (): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: "/auth/profile",
+      url: "/api/auth/profile",
       method: "post",
     })
       .then(({ data }) => {
@@ -78,7 +76,7 @@ export const userBasicDetailsUpdate = (basicData: {
 }): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + "/auth/update_profile",
+      url: "/api/auth/update_profile",
       method: "post",
       data: basicData,
     })
@@ -99,7 +97,7 @@ export const changePassword = (data: {
 }): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: "/auth/change_password",
+      url: "/api/auth/change_password",
       method: "post",
       data: data,
     })
@@ -120,7 +118,7 @@ export const restPassword = (data: {
 }): Promise<any> => {
   return new Promise((resolve, reject) => {
     request({
-      url: BASE_URL + "/auth/password_reset",
+      url: "/api/auth/password_reset",
       method: "post",
       data: data,
     })

@@ -11,12 +11,11 @@ export interface ReadingListInfo {
   updatedAt: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const getPublicReadingLists = (): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + "/reading-lists/public",
+      url: "/api/reading-lists",
       method: "get",
     })
       .then(({ data }) => {
@@ -31,7 +30,7 @@ export const getPublicReadingLists = (): Promise<any> => {
 export const getUserReadingLists = (userId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reading-lists/user/${userId}`,
+      url: `/api/reading-lists/user/${userId}`,
       method: "get",
     })
       .then(({ data }) => {
@@ -46,7 +45,7 @@ export const getUserReadingLists = (userId: string): Promise<any> => {
 export const getReadingListById = (listId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reading-lists/${listId}`,
+      url: `/api/reading-lists/${listId}`,
       method: "get",
     })
       .then(({ data }) => {
@@ -61,7 +60,7 @@ export const getReadingListById = (listId: string): Promise<any> => {
 export const createReadingList = (listData: Partial<ReadingListInfo>): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + "/reading-lists",
+      url: "/api/reading-lists",
       method: "post",
       data: listData,
     })
@@ -77,7 +76,7 @@ export const createReadingList = (listData: Partial<ReadingListInfo>): Promise<a
 export const updateReadingList = (listId: string, listData: Partial<ReadingListInfo>): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reading-lists/${listId}`,
+      url: `/api/reading-lists/${listId}`,
       method: "put",
       data: listData,
     })
@@ -93,7 +92,7 @@ export const updateReadingList = (listId: string, listData: Partial<ReadingListI
 export const addBookToList = (listId: string, bookId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reading-lists/${listId}/books`,
+      url: `/api/reading-lists/${listId}/books`,
       method: "post",
       data: { bookId },
     })
@@ -109,7 +108,7 @@ export const addBookToList = (listId: string, bookId: string): Promise<any> => {
 export const removeBookFromList = (listId: string, bookId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reading-lists/${listId}/books/${bookId}`,
+      url: `/api/reading-lists/${listId}/books/${bookId}`,
       method: "delete",
     })
       .then(({ data }) => {
@@ -124,7 +123,7 @@ export const removeBookFromList = (listId: string, bookId: string): Promise<any>
 export const deleteReadingList = (listId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reading-lists/${listId}`,
+      url: `/api/reading-lists/${listId}`,
       method: "delete",
     })
       .then(({ data }) => {

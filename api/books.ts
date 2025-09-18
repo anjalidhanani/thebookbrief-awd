@@ -24,15 +24,13 @@ export interface iBookInfo {
   chapter: iChapter[];
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export const getBooksByKeyword = (data: {
   keyword: string;
   page: number;
 }): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/search?offset=${data.page}`,
+      url: `/api/search?offset=${data.page}`,
       method: "post",
       data: data,
     })
@@ -49,7 +47,7 @@ export const getBooksByKeyword = (data: {
 export const getAllFreeBooks = (page: number): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/books/free?offset=${page}`,
+      url: `/api/books/free?offset=${page}`,
       method: "get",
     })
       .then(({ data }) => {
@@ -65,7 +63,7 @@ export const getAllFreeBooks = (page: number): Promise<any> => {
 export const getFeaturedBook = (): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + "/books/daily-reads",
+      url: "/api/books/daily-reads",
       method: "get",
     })
       .then(({ data }) => {
@@ -80,7 +78,7 @@ export const getFeaturedBook = (): Promise<any> => {
 export const getBookById = (id: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + "/books/id/" + id,
+      url: "/api/books/" + id,
       method: "get",
     })
       .then(({ data }) => {

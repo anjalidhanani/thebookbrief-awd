@@ -7,12 +7,10 @@ export interface CategoryInfo {
   color?: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export const getAllCategories = (): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + "/category",
+      url: "/api/categories",
       method: "get",
     })
       .then(({ data }) => {
@@ -27,7 +25,7 @@ export const getAllCategories = (): Promise<any> => {
 export const getBooksByCategory = (categoryName: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/category/${encodeURIComponent(categoryName)}`,
+      url: `/api/categories/${encodeURIComponent(categoryName)}`,
       method: "get",
     })
       .then(({ data }) => {

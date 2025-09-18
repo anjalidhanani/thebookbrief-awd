@@ -11,12 +11,11 @@ export interface BookReviewInfo {
   updatedAt: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const getBookReviews = (bookId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reviews/book/${bookId}`,
+      url: `/api/reviews/book/${bookId}`,
       method: "get",
     })
       .then(({ data }) => {
@@ -31,7 +30,7 @@ export const getBookReviews = (bookId: string): Promise<any> => {
 export const getUserReviews = (userId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reviews/user/${userId}`,
+      url: `/api/reviews/user/${userId}`,
       method: "get",
     })
       .then(({ data }) => {
@@ -46,7 +45,7 @@ export const getUserReviews = (userId: string): Promise<any> => {
 export const getUserBookReview = (userId: string, bookId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reviews/user/${userId}/book/${bookId}`,
+      url: `/api/reviews/user/${userId}/book/${bookId}`,
       method: "get",
     })
       .then(({ data }) => {
@@ -61,7 +60,7 @@ export const getUserBookReview = (userId: string, bookId: string): Promise<any> 
 export const createOrUpdateReview = (reviewData: Partial<BookReviewInfo>): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + "/reviews",
+      url: "/api/reviews",
       method: "post",
       data: reviewData,
     })
@@ -77,7 +76,7 @@ export const createOrUpdateReview = (reviewData: Partial<BookReviewInfo>): Promi
 export const deleteReview = (reviewId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     authRequest({
-      url: BASE_URL + `/reviews/${reviewId}`,
+      url: `/api/reviews/${reviewId}`,
       method: "delete",
     })
       .then(({ data }) => {

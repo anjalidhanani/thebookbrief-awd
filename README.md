@@ -1,6 +1,10 @@
-# 📚 TheBookBrief - Frontend
+# 📚 TheBookBrief - Full Stack Application
 
-A modern, responsive web application for reading and discovering books. Built with Next.js, TypeScript, and Tailwind CSS.
+A modern, responsive full-stack web application for reading and discovering books. Built with Next.js, TypeScript, and Tailwind CSS with integrated backend API.
+
+## 🔄 Backend Integration
+
+This application now includes a fully integrated backend that was merged from a separate Express.js backend. The backend functionality is now served through Next.js API routes, making this a complete full-stack application.
 
 ## ✨ Features
 
@@ -17,6 +21,7 @@ A modern, responsive web application for reading and discovering books. Built wi
 
 ## 🛠️ Tech Stack
 
+### Frontend
 - **Framework**: [Next.js 13](https://nextjs.org/) - React framework with SSR
 - **Language**: [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
@@ -27,12 +32,21 @@ A modern, responsive web application for reading and discovering books. Built wi
 - **Notifications**: [React Hot Toast](https://react-hot-toast.com/) - Smoking hot notifications
 - **Carousel**: [Swiper](https://swiperjs.com/) - Modern touch slider
 
+### Backend
+- **Database**: [MongoDB](https://www.mongodb.com/) - NoSQL database with Mongoose ODM
+- **Authentication**: [JWT](https://jwt.io/) - JSON Web Tokens for secure authentication
+- **Password Hashing**: [bcrypt](https://www.npmjs.com/package/bcrypt) - Secure password hashing
+- **Validation**: [Zod](https://zod.dev/) - TypeScript-first schema validation
+- **Security**: [Helmet](https://helmetjs.github.io/) - Security headers and CORS protection
+- **Logging**: [Morgan](https://www.npmjs.com/package/morgan) - HTTP request logger
+
 ## 🚀 Getting Started
 
 ### Prerequisites
 
 - Node.js 18.x or higher
 - npm or yarn package manager
+- MongoDB (local installation or MongoDB Atlas)
 
 ### Installation
 
@@ -53,7 +67,12 @@ A modern, responsive web application for reading and discovering books. Built wi
    
    Create a `.env.local` file in the root directory:
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost:4000
+   # Database Configuration
+   MONGO_URI=mongodb://localhost:27017/bookbrief
+   # JWT Configuration
+   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+   # Application Environment
+   NODE_ENV=development
    NEXT_PUBLIC_ENV=development
    ```
 
@@ -68,6 +87,8 @@ A modern, responsive web application for reading and discovering books. Built wi
    
    Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
 
+> **Note**: The application now runs as a single full-stack Next.js app. The backend API is served through Next.js API routes, eliminating the need for a separate backend server.
+
 ### Build for Production
 
 ```bash
@@ -81,8 +102,8 @@ npm start
 ## 📁 Project Structure
 
 ```
-thebookbrief-webapp-main/
-├── api/                    # API service functions
+thebookbrief-awd/
+├── api/                    # Frontend API service functions
 │   ├── books.ts           # Book-related API calls
 │   ├── categories.ts      # Category API calls
 │   ├── readingLists.ts    # Reading list API calls
@@ -104,14 +125,36 @@ thebookbrief-webapp-main/
 │       ├── login/        # Authentication
 │       └── ...
 ├── hooks/                # Custom React hooks
-├── lib/                  # Utility libraries
-├── pages/                # Next.js pages (routing)
+├── lib/                  # Backend utilities and models
+│   ├── middleware/       # API middleware
+│   │   ├── apiAuth.ts   # Authentication middleware
+│   │   └── auth.ts      # Auth utilities
+│   ├── models/          # Mongoose models
+│   │   ├── User.ts      # User model
+│   │   ├── Book.ts      # Book model
+│   │   ├── Category.ts  # Category model
+│   │   ├── BookReview.ts # Review model
+│   │   └── ReadingList.ts # Reading list model
+│   └── utils/           # Backend utilities
+│       ├── database.ts  # MongoDB connection
+│       └── jwt.ts       # JWT utilities
+├── pages/                # Next.js pages and API routes
+│   ├── api/             # Backend API routes
+│   │   ├── auth/        # Authentication endpoints
+│   │   ├── books/       # Book endpoints
+│   │   ├── categories/  # Category endpoints
+│   │   ├── reviews/     # Review endpoints
+│   │   ├── reading-lists/ # Reading list endpoints
+│   │   └── search/      # Search endpoints
+│   ├── book/            # Book pages
+│   ├── categories/      # Category pages
+│   └── ...              # Other pages
 ├── public/               # Static assets
 │   ├── fonts/           # Custom fonts (Satoshi)
 │   └── images/          # Images and icons
 ├── store/                # Redux store configuration
 ├── styles/               # Global styles
-├── utils/                # Utility functions
+├── utils/                # Frontend utility functions
 └── ...config files
 ```
 
@@ -140,18 +183,22 @@ thebookbrief-webapp-main/
 
 ## 🌐 API Integration
 
-The frontend communicates with the backend API for:
+The application includes a fully integrated backend with the following API endpoints:
 
-- **Authentication**: Login, signup, password reset
-- **Books**: Fetching book data, chapters, categories
-- **Reviews**: Creating, reading, updating, and deleting book reviews
-- **Reading Lists**: Managing personal and public reading lists
-- **User Data**: Profile management, preferences
-- **Search**: Book and author search functionality
+- **Authentication**: `/api/auth/*` - Login, signup, password reset, profile management
+- **Books**: `/api/books/*` - Fetching book data, chapters, categories, daily reads
+- **Reviews**: `/api/reviews/*` - Creating, reading, updating, and deleting book reviews
+- **Reading Lists**: `/api/reading-lists/*` - Managing personal and public reading lists
+- **Categories**: `/api/categories/*` - Category management and book filtering
+- **Search**: `/api/search/` - Book and author search functionality
 
-### API Configuration
+### API Architecture
 
-Base URL is configured via `NEXT_PUBLIC_API_URL` environment variable.
+- **Internal API**: All backend functionality is now served through Next.js API routes
+- **Database**: MongoDB with Mongoose ODM for data persistence
+- **Authentication**: JWT-based authentication with secure token handling
+- **Validation**: Zod schemas for request/response validation
+- **Security**: Helmet middleware for security headers and CORS protection
 
 ## 📱 Key Pages
 
@@ -189,7 +236,7 @@ Base URL is configured via `NEXT_PUBLIC_API_URL` environment variable.
 
 ## 📦 Dependencies
 
-### Core Dependencies
+### Frontend Dependencies
 - `next` - React framework
 - `react` & `react-dom` - React library
 - `typescript` - Type safety
@@ -197,14 +244,21 @@ Base URL is configured via `NEXT_PUBLIC_API_URL` environment variable.
 - `@reduxjs/toolkit` - State management
 - `axios` - HTTP requests
 
+### Backend Dependencies
+- `mongoose` - MongoDB ODM
+- `bcrypt` - Password hashing
+- `jsonwebtoken` - JWT authentication
+- `zod` - Schema validation
+- `cors` - Cross-origin resource sharing
+- `helmet` - Security middleware
+- `morgan` - HTTP request logging
+
 ### UI & UX
 - `@headlessui/react` - Accessible components
 - `@heroicons/react` - Icons
 - `react-hot-toast` - Notifications
 - `swiper` - Carousels
 - `html-entities` - HTML entity decoding
-- `react-hook-form` - Form management (if used)
-- `zod` - Schema validation (if used)
 
 ## 🚀 Deployment
 
@@ -218,9 +272,37 @@ The application can be deployed on:
 ### Environment Variables for Production
 
 ```env
-NEXT_PUBLIC_API_URL=https://your-api-domain.com
+# Database Configuration
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/bookbrief
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Application Environment
+NODE_ENV=production
 NEXT_PUBLIC_ENV=production
 ```
+
+## 🔄 Backend Migration Notes
+
+This application was originally a frontend-only Next.js app that communicated with a separate Express.js backend. The backend has been successfully merged into this Next.js application as API routes.
+
+### What Was Migrated
+
+1. **Models**: All Mongoose models moved to `lib/models/`
+2. **API Routes**: Express routes converted to Next.js API routes in `pages/api/`
+3. **Utilities**: Database connection, JWT utilities, and middleware moved to `lib/`
+4. **Dependencies**: All backend dependencies added to `package.json`
+5. **Client Updates**: Frontend API clients updated to use internal routes
+
+### Benefits of the Merge
+
+- **Simplified Deployment**: Single application instead of separate frontend/backend
+- **Better Performance**: Internal API calls eliminate network latency
+- **Easier Development**: Single codebase for full-stack development
+- **Reduced Complexity**: No need to manage separate servers and deployments
+
+> **Note**: The separate `thebookbrief-backend` directory can now be safely removed as all functionality has been integrated.
 
 ## 🤝 Contributing
 
