@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import authRequest from '../../../utils/authRequest';
 
+interface Chapter {
+  id: string;
+  title: string;
+  text: string;
+}
+
 interface Book {
   _id: string;
   id: string;
@@ -14,6 +20,7 @@ interface Book {
   category?: string;
   rating?: number;
   chapterCount?: number;
+  chapter?: Chapter[];
   language?: string;
   readingTime?: number;
   totalReads: number;
@@ -55,6 +62,17 @@ const BooksManagement: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
+
+  // Chapter management state
+  const [showChapterModal, setShowChapterModal] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [showChapterForm, setShowChapterForm] = useState(false);
+  const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
+  const [chapterFormData, setChapterFormData] = useState({
+    title: '',
+    text: '',
+  });
 
   const [formData, setFormData] = useState<BookFormData>({
     id: '',
@@ -291,6 +309,119 @@ const BooksManagement: React.FC = () => {
     }
   };
 
+  // Chapter management functions
+  const handleManageChapters = async (book: Book) => {
+    setSelectedBook(book);
+    setShowChapterModal(true);
+    await fetchChapters(book.id);
+  };
+
+  const fetchChapters = async (bookId: string) => {
+    try {
+      const response = await authRequest({
+        url: `/api/admin/books/chapters?bookId=${bookId}`,
+        method: 'GET',
+      });
+      setChapters(response.data.chapters || []);
+    } catch (error: any) {
+      toast.error('Failed to fetch chapters');
+    }
+  };
+
+  const handleAddChapter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBook) return;
+
+    try {
+      await authRequest({
+        url: '/api/admin/books/chapters',
+        method: 'POST',
+        data: {
+          bookId: selectedBook.id,
+          chapter: chapterFormData,
+        },
+      });
+      toast.success('Chapter added successfully');
+      setShowChapterForm(false);
+      resetChapterForm();
+      await fetchChapters(selectedBook.id);
+      fetchBooks(); // Refresh books to update chapter count
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to add chapter');
+    }
+  };
+
+  const handleUpdateChapter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBook || !editingChapter) return;
+
+    try {
+      await authRequest({
+        url: '/api/admin/books/chapters',
+        method: 'PUT',
+        data: {
+          bookId: selectedBook.id,
+          chapterId: editingChapter.id,
+          chapter: chapterFormData,
+        },
+      });
+      toast.success('Chapter updated successfully');
+      setShowChapterForm(false);
+      setEditingChapter(null);
+      resetChapterForm();
+      await fetchChapters(selectedBook.id);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update chapter');
+    }
+  };
+
+  const handleDeleteChapter = async (chapterId: string) => {
+    if (!selectedBook) return;
+
+    if (confirm('Are you sure you want to delete this chapter?')) {
+      try {
+        await authRequest({
+          url: '/api/admin/books/chapters',
+          method: 'DELETE',
+          data: {
+            bookId: selectedBook.id,
+            chapterId: chapterId,
+          },
+        });
+        toast.success('Chapter deleted successfully');
+        await fetchChapters(selectedBook.id);
+        fetchBooks(); // Refresh books to update chapter count
+      } catch (error: any) {
+        toast.error('Failed to delete chapter');
+      }
+    }
+  };
+
+  const handleEditChapter = (chapter: Chapter) => {
+    setEditingChapter(chapter);
+    setChapterFormData({
+      title: chapter.title,
+      text: chapter.text,
+    });
+    setShowChapterForm(true);
+  };
+
+  const resetChapterForm = () => {
+    setChapterFormData({
+      title: '',
+      text: '',
+    });
+    setEditingChapter(null);
+  };
+
+  const handleChapterInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setChapterFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -449,6 +580,12 @@ const BooksManagement: React.FC = () => {
                         className="text-sky-600 hover:text-sky-900 mr-3"
                       >
                         Edit
+                      </button>
+                      <button
+                        onClick={() => handleManageChapters(book)}
+                        className="text-green-600 hover:text-green-900 mr-3"
+                      >
+                        Chapters
                       </button>
                       <button
                         onClick={() => handleDelete(book.id)}
@@ -776,6 +913,166 @@ const BooksManagement: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Chapter Management Modal */}
+      {showChapterModal && selectedBook && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Manage Chapters - {selectedBook.title}
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowChapterModal(false);
+                  setSelectedBook(null);
+                  setChapters([]);
+                  setShowChapterForm(false);
+                  resetChapterForm();
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-sm text-gray-600">
+                Total Chapters: {chapters.length}
+              </p>
+              <button
+                onClick={() => setShowChapterForm(true)}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium"
+              >
+                Add New Chapter
+              </button>
+            </div>
+
+            {/* Chapters List */}
+            <div className="space-y-4 mb-6">
+              {chapters.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No chapters found. Add your first chapter to get started.
+                </div>
+              ) : (
+                chapters.map((chapter, index) => (
+                  <div key={chapter.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h4 className="text-lg font-medium text-gray-900 mb-2">
+                          Chapter {index + 1}: {chapter.title}
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                          {chapter.text.length > 200
+                            ? `${chapter.text.substring(0, 200)}...`
+                            : chapter.text
+                          }
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {chapter.text.length} characters
+                        </p>
+                      </div>
+                      <div className="flex space-x-2 ml-4">
+                        <button
+                          onClick={() => handleEditChapter(chapter)}
+                          className="text-sky-600 hover:text-sky-900 text-sm font-medium"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteChapter(chapter.id)}
+                          className="text-red-600 hover:text-red-900 text-sm font-medium"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Chapter Form Modal */}
+            {showChapterForm && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
+                <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-6">
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      {editingChapter ? 'Edit Chapter' : 'Add New Chapter'}
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowChapterForm(false);
+                        resetChapterForm();
+                      }}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <form onSubmit={editingChapter ? handleUpdateChapter : handleAddChapter} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Chapter Title *
+                      </label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={chapterFormData.title}
+                        onChange={handleChapterInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                        placeholder="Enter chapter title"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Chapter Content *
+                      </label>
+                      <textarea
+                        name="text"
+                        value={chapterFormData.text}
+                        onChange={handleChapterInputChange}
+                        rows={12}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                        placeholder="Enter chapter content..."
+                        required
+                      />
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowChapterForm(false);
+                          resetChapterForm();
+                        }}
+                        className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 font-medium transition-colors"
+                      >
+                        {editingChapter ? 'Update Chapter' : 'Add Chapter'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
